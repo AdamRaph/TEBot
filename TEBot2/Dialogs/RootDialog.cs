@@ -140,7 +140,10 @@ namespace TEBot2.Dialogs
         [LuisIntent("Greeting")]
         public async Task Greeting(IDialogContext context, LuisResult result)
         {
-            string message = $"Welcome to the TE Bot. Specify a topic you'd like to find a speaker for.\n\nTry a query like 'Find speaker [topic] [location]'.\n\nLocation must be an AU state (NSW/VIC/QLD)";
+            string message = $"Welcome to the TE Bot. Specify a topic you'd like to find a speaker for.\n\n" +
+                $"Try a query like 'Find speaker [topic] [location]'.\n\n" +
+                $"Location must be an AU state or city.\n\n" +
+                $"We have speakers in NSW, VIC, and QLD, but can discuss attending other states.";
             await context.PostAsync(message);
             context.Wait(this.MessageReceived);
         }
