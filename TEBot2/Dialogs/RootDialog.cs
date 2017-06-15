@@ -67,47 +67,57 @@ namespace TEBot2.Dialogs
                     else if (location.Equals("vic") || location.Equals("melbourne"))
                         location = "victoria";
 
-                    var db = new DocumentDbSettings();
-                    db.Connect();
-                    List<Profile> profiles = db.SearchTopic(topic);
+                    if (!(location.Equals("new south wales") || location.Equals("queensland") || location.Equals("victoria")))
+                        hasLocation = false;
 
-                    Random rnd = new Random();
-                    IEnumerable<Profile> res = profiles.Where(p => p.tags.Any(m => m.Contains(topic))).Where(c=>c.states.Any(m=>m.Contains(location)));
-                    var filteredProfiles = res.ToList<Profile>().OrderBy(p => rnd.Next());
-
-                    if (filteredProfiles.Count() > 0)
+                    if (hasLocation)
                     {
-                        reply.Attachments.Clear();
-                        reply.AttachmentLayout = AttachmentLayoutTypes.Carousel;
+                        var db = new DocumentDbSettings();
+                        db.Connect();
+                        List<Profile> profiles = db.SearchTopic(topic);
 
-                        foreach (Profile p in filteredProfiles)
+                        Random rnd = new Random();
+                        IEnumerable<Profile> res = profiles.Where(p => p.tags.Any(m => m.Contains(topic))).Where(c => c.states.Any(m => m.Contains(location)));
+                        var filteredProfiles = res.ToList<Profile>().OrderBy(p => rnd.Next());
+
+                        if (filteredProfiles.Count() > 0)
                         {
-                            //Site and Email buttons on each card.
-                            List<CardAction> buttons = new List<CardAction>();
-                            CardAction siteButton = new CardAction("button") { Value = $"{p.website}", Title = "Website", Type = ActionTypes.OpenUrl};
-                            CardAction emailButton = new CardAction("button") { Value = $"mailto:{p.email}", Title = "Email", Type = ActionTypes.OpenUrl};
-                            buttons.Add(siteButton);
-                            buttons.Add(emailButton);
+                            reply.Attachments.Clear();
+                            reply.AttachmentLayout = AttachmentLayoutTypes.Carousel;
 
-                            var hero = new HeroCard();
-                            hero.Subtitle = p.slogan;
-                            hero.Title = p.name;
+                            foreach (Profile p in filteredProfiles)
+                            {
+                                //Site and Email buttons on each card.
+                                List<CardAction> buttons = new List<CardAction>();
+                                CardAction siteButton = new CardAction("button") { Value = $"{p.website}", Title = "Website", Type = ActionTypes.OpenUrl };
+                                CardAction emailButton = new CardAction("button") { Value = $"mailto:{p.email}", Title = "Email", Type = ActionTypes.OpenUrl };
+                                buttons.Add(siteButton);
+                                buttons.Add(emailButton);
 
-                            var bioText = p.bio;
-                            //var bioTrunc = TruncateText(bioText, 220);
-                            //bioTrunc += "...";
+                                var hero = new HeroCard();
+                                hero.Subtitle = p.slogan;
+                                hero.Title = p.name;
 
-                            hero.Text = bioText;
-                            var image = new CardImage();
-                            image.Url = "http://tebot2.azurewebsites.net" + p.picture;
-                            hero.Images.Add(image);
-                            hero.Buttons = buttons;
-                            var heroAttach = hero.ToAttachment();
-                            reply.Attachments.Add(heroAttach);
+                                var bioText = p.bio;
+                                //var bioTrunc = TruncateText(bioText, 220);
+                                //bioTrunc += "...";
+
+                                hero.Text = bioText;
+                                var image = new CardImage();
+                                image.Url = "http://tebot2.azurewebsites.net" + p.picture;
+                                hero.Images.Add(image);
+                                hero.Buttons = buttons;
+                                var heroAttach = hero.ToAttachment();
+                                reply.Attachments.Add(heroAttach);
+                            }
+
+                            await context.PostAsync(reply);
+                            context.Wait(this.MessageReceived);
                         }
-
-                        await context.PostAsync(reply);
-                        context.Wait(this.MessageReceived);
+                    }
+                    else
+                    {
+                        await context.PostAsync("Please search for speakers in New South Wales, Queensland or Victoria");
                     }
                 }
                 else
@@ -130,7 +140,7 @@ namespace TEBot2.Dialogs
         [LuisIntent("Greeting")]
         public async Task Greeting(IDialogContext context, LuisResult result)
         {
-            string message = $"Welcome to the TE Bot! Specify a topic you'd like to find a speaker for!\nTry a query like 'Find speaker [topic] [location]'.";
+            string message = $"Welcome to the TE Bot. Specify a topic you'd like to find a speaker for.\n\nTry a query like 'Find speaker [topic] [location]'.\n\nLocation must be an AU state (NSW/VIC/QLD)";
             await context.PostAsync(message);
             context.Wait(this.MessageReceived);
         }

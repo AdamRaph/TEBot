@@ -146,7 +146,9 @@
       <SubType>Designer</SubType>
     </Content>
     <None Include="Properties\PublishProfiles\BotFrameworkWebChat20170602030557 - Web Deploy.pubxml" />
-    <None Include="Properties\PublishProfiles\TEBot2 - Web Deploy.pubxml" />
+    <None Include="Properties\PublishProfiles\TEBot2 - Web Deploy.pubxml">
+      <SubType>Designer</SubType>
+    </None>
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>
